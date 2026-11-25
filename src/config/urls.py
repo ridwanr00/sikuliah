@@ -19,16 +19,17 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Berkas media hanya disajikan Django bila memakai penyimpanan lokal.
+# Jika USE_S3_STORAGE aktif, berkas berada di bucket dan diakses lewat URL bertanda tangan.
+if not settings.USE_S3_STORAGE:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if not settings.DEBUG:
-    # Hosting gratis tanpa object storage: sajikan media lewat Django.
-    # Catatan: tidak efisien untuk produksi nyata (lihat keterbatasan di README).
-    from django.views.static import serve
+    if not settings.DEBUG:
+        from django.views.static import serve
 
-    urlpatterns += [
-        re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT})
-    ]
+        urlpatterns += [
+            re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT})
+        ]
 
 handler403 = "apps.accounts.views.error_403"
 handler404 = "apps.accounts.views.error_404"

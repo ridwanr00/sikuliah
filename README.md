@@ -103,6 +103,11 @@ Isi nilai pada `.env`:
 | `DATABASE_URL` | `postgresql://user:pass@host/neondb?sslmode=require` | Kosongkan untuk SQLite lokal; isi dengan Neon saat online |
 | `MAX_UPLOAD_SIZE_MB` | `5` | Batas ukuran unggahan |
 
+Untuk menyimpan berkas unggahan di object storage (opsional, lihat
+[`docs/12`](docs/12-database-dan-backup.md) §6): `USE_S3_STORAGE=True`,
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME`,
+`AWS_S3_ENDPOINT_URL`, `AWS_S3_REGION_NAME`.
+
 Membuat `SECRET_KEY` baru:
 
 ```bash
@@ -237,6 +242,8 @@ scripts/restore.sh backups/<tanggal-jam>/database.dump
 - Instance tidur setelah ± 15 menit tidak diakses; permintaan pertama bisa lambat ± 30 detik.
 - Disk bersifat sementara: basis data SQLite dan berkas unggahan hilang saat deploy ulang
   atau restart. Karena itu `seed_demo` dijalankan pada setiap start.
+- Solusi permanen: `DATABASE_URL` (Neon) untuk data dan `USE_S3_STORAGE` (Backblaze B2 /
+  Supabase, gratis) untuk berkas — lihat [`docs/12`](docs/12-database-dan-backup.md).
 - Jangan menyimpan data nyata atau menaruh nilai ujian asli di instance demo ini.
 - Akun demo memakai kata sandi publik; ganti setelah demo bila instance dibiarkan hidup.
 

@@ -194,28 +194,63 @@ Cadangan yang belum pernah dipulihkan belum bisa dipercaya. Lakukan sekali:
 
 ## 6. Berkas unggahan (`media/`) masih hilang saat redeploy
 
-Basis data sudah aman, tetapi berkas materi/pengumpulan tetap di disk sementara Render.
-Pilihan:
+Basis data sudah aman di Neon, tetapi berkas materi/pengumpulan tetap di disk sementara
+Render. Solusinya object storage. Perbandingan layanan gratis (kuota dapat berubah —
+cek dashboard masing-masing sebelum dipakai):
 
-| Pilihan | Usaha | Catatan |
-|---------|-------|---------|
-| Terima apa adanya | 0 | Cocok untuk demo: unggah ulang berkas bila perlu. Sebutkan sebagai keterbatasan. |
-| Supabase Storage (S3-compatible) | ± 45 menit | Gratis 1 GB; pakai `django-storages` + `boto3`, set `AWS_*` dan `STORAGES`. |
-| Cloudinary | ± 30 menit | Gratis 25 GB; butuh `cloudinary` + `django-cloudinary-storage`; cocok untuk gambar/PDF. |
-| Render Disk (berbayar) | ± 10 menit | Hanya pada instance berbayar; mount ke `/var/data`, set `MEDIA_ROOT`. |
+| Layanan | Gratis | Kartu kredit | S3-compatible | Catatan |
+|---------|--------|--------------|---------------|---------|
+| **Backblaze B2** | 10 GB | **Tidak** untuk bucket privat | ✅ | Egress gratis sampai 3× data tersimpan; bucket publik butuh riwayat pembayaran |
+| **Supabase Storage** | 1 GB | Tidak | ✅ | Maks. 50 MB/berkas; project **pause setelah 7 hari** tidak aktif |
+| **Cloudflare R2** | 10 GB + egress gratis | Umumnya ya saat aktivasi | ✅ | Performa terbaik; tetap tanpa biaya selama di bawah kuota |
+| **Cloudinary** | 25 GB | Tidak | ❌ (API khusus) | Berorientasi gambar; PDF ditangani sebagai *raw*, butuh paket tambahan |
+| Render Disk | — | Berbayar | — | Hanya untuk instance berbayar |
 
-Langkah ringkas Supabase Storage (bila dipilih):
+**Rekomendasi untuk proyek ini: Backblaze B2** — kuota 10 GB (cukup untuk ratusan berkas
+5 MB), tidak perlu kartu untuk bucket privat, dan S3-compatible sehingga hanya perlu
+konfigurasi, bukan perubahan kode.
 
-1. Buat project Supabase → **Storage → New bucket** `media` (private).
-2. **Project Settings → API**: catat `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, region.
-3. `pip install django-storages[boto3]`.
-4. Set env: `AWS_S3_ENDPOINT_URL=https://<project>.supabase.co/storage/v1/s3`,
-   `AWS_STORAGE_BUCKET_NAME=media`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
-   `AWS_S3_REGION_NAME`.
-5. Ubah `STORAGES["default"]` ke `storages.backends.s3.S3Storage` bila env tersedia.
-6. Uji unggah materi, lalu restart service — berkas harus tetap dapat diunduh.
+### 6.1 Mengaktifkan object storage (sudah didukung aplikasi)
 
----
+Aplikasi membaca enam variabel lingkungan. Bila `USE_S3_STORAGE=False` (default),
+berkas tetap disimpan di `media/` lokal.
+
+1. Daftar di <https://www.backblaze.com/sign-up/cloud-storage> (tanpa kartu).
+2. **Buckets → Create a Bucket**:
+   - Bucket name: `sikuliah-media`
+   - Files in bucket are: **Private**
+   - Region: pilih terdekat (mis. `us-west-004`)
+3. **Application Keys → Add a New Application Key**:
+   - Name: `sikuliah-app`
+   - Allow access to bucket: `sikuliah-media`
+   - Type of access: **Read and Write**
+   - Catat `keyID` dan `applicationKey` (hanya tampil sekali).
+4. Catat endpoint S3 bucket, bentuknya `https://s3.<region>.backblazeb2.com`
+   (contoh: `https://s3.us-west-004.backblazeb2.com`).
+5. Tambahkan environment variable di Render:
+
+   | Key | Value |
+   |-----|-------|
+   | `USE_S3_STORAGE` | `True` |
+   | `AWS_ACCESS_KEY_ID` | keyID |
+   | `AWS_SECRET_ACCESS_KEY` | applicationKey |
+   | `AWS_STORAGE_BUCKET_NAME` | `sikuliah-media` |
+   | `AWS_S3_ENDPOINT_URL` | `https://s3.us-west-004.backblazeb2.com` |
+   | `AWS_S3_REGION_NAME` | `us-west-004` |
+
+6. Deploy ulang. Saat start, `seed_demo` mengunggah ulang berkas demo ke bucket.
+7. Uji: unggah materi baru → klik Unduh → **restart** service → unduh lagi. Berkas harus
+   tetap ada.
+
+Catatan penting:
+
+- Bucket tetap **privat**. Unduhan materi/jawaban dilayani view yang memeriksa peran,
+  dan tautan lampiran memakai *signed URL* berumur pendek.
+- Berkas yang sudah ada di `media/` lokal tidak otomatis pindah; unggah ulang atau
+  jalankan sinkronisasi manual bila perlu.
+- `collectstatic` tidak terpengaruh — CSS/JS tetap dibundel WhiteNoise, bukan ke bucket.
+- Untuk Supabase Storage, polanya sama: `AWS_S3_ENDPOINT_URL=https://<project>.supabase.co/storage/v1/s3`,
+  bucket privat, dan `AWS_S3_REGION_NAME` sesuai region project.
 
 ## 7. Keamanan
 
