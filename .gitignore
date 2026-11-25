@@ -1,0 +1,28 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# --- Django ---
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# --- Konfigurasi sensitif ---
+.env
+.env.*
+!.env.example
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Hasil build dokumen ---
+docs/build/*.pdf
+docs/build/*.html

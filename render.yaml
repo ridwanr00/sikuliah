@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: sikuliah
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && cd src && python manage.py collectstatic --noinput"
+    startCommand: "cd src && python manage.py migrate --noinput && python manage.py seed_demo && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: "127.0.0.1,localhost"

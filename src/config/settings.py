@@ -10,6 +10,19 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default="dev-only-secret-key-ganti-sebe
 DEBUG = config("DJANGO_DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
+# --- Penyesuaian hosting (Render/PythonAnywhere) ---
+# Render menyetel RENDER_EXTERNAL_HOSTNAME otomatis; tambahkan tanpa perlu edit manual.
+RENDER_HOST = config("RENDER_EXTERNAL_HOSTNAME", default="")
+if RENDER_HOST:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+if RENDER_HOST:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOST}")
+
+# Render/PythonAnywhere meneruskan HTTPS lewat proxy.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -110,7 +123,17 @@ ALLOWED_UPLOAD_EXTENSIONS = {"pdf", "docx", "pptx", "zip"}
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
+# Cookie aman hanya dikirim lewat HTTPS. Bisa dimatikan untuk uji produksi di localhost.
+SECURE_COOKIES = config("DJANGO_SECURE_COOKIES", default=not DEBUG, cast=bool)
+SESSION_COOKIE_SECURE = SECURE_COOKIES
+CSRF_COOKIE_SECURE = SECURE_COOKIES
+
 if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = "DENY"
+
+# Redirect HTTPS & HSTS hanya aktif saat berjalan di hosting (Render).
+# Di localhost dengan DEBUG=False keduanya dimatikan agar uji lokal tetap bisa.
+SECURE_SSL_REDIRECT = config("DJANGO_SECURE_SSL_REDIRECT", default=bool(RENDER_HOST), cast=bool)
+SECURE_HSTS_SECONDS = config("DJANGO_HSTS_SECONDS", default=3600 if RENDER_HOST else 0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
