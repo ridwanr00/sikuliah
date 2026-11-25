@@ -49,6 +49,7 @@ DOCS = [
     ("09-teknologi-dan-struktur-kode.md", "Bab 10 — Teknologi, Struktur Kode, dan Konvensi"),
     ("10-panduan-screenshot-dan-video.md", "Bab 11 — Panduan Screenshot dan Video"),
     ("11-checklist-pengumpulan.md", "Bab 12 — Checklist Pengumpulan"),
+    ("12-database-dan-backup.md", "Bab 13 — Basis Data Online dan Cadangan"),
 ]
 
 CSS = """

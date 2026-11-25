@@ -26,3 +26,6 @@ Thumbs.db
 # --- Hasil build dokumen ---
 docs/build/*.pdf
 docs/build/*.html
+
+# --- Cadangan basis data lokal ---
+backups/

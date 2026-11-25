@@ -37,6 +37,7 @@
 | 09 | [Teknologi & Struktur Kode](09-teknologi-dan-struktur-kode.md) | Stack, alasan, struktur folder, konvensi | Bab 8 | ✅ |
 | 10 | [Panduan Screenshot & Video](10-panduan-screenshot-dan-video.md) | Shot list, storyboard, temuan statistik | Bab 9 + video | ✅ |
 | 11 | [Checklist Pengumpulan](11-checklist-pengumpulan.md) | Paket ZIP, uji mesin bersih | — | ✅ |
+| 12 | [Basis Data & Cadangan](12-database-dan-backup.md) | Neon, koneksi dari komputer, backup/restore | Lampiran | ✅ |
 
 Seluruh dokumen sudah ditinjau dan disesuaikan dengan implementasi pada 25 November 2026.
 Sisa pekerjaan ada pada kolom bukti (video, ZIP) — lihat dokumen 10 dan 11.

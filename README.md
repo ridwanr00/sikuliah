@@ -100,7 +100,7 @@ Isi nilai pada `.env`:
 | `DJANGO_SECRET_KEY` | `ganti-dengan-string-acak` | Wajib; jangan dibagikan |
 | `DJANGO_DEBUG` | `True` | `False` untuk demo publik |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Pisahkan dengan koma |
-| `DATABASE_URL` | `sqlite:///db.sqlite3` | Kosongkan untuk SQLite default |
+| `DATABASE_URL` | `postgresql://user:pass@host/neondb?sslmode=require` | Kosongkan untuk SQLite lokal; isi dengan Neon saat online |
 | `MAX_UPLOAD_SIZE_MB` | `5` | Batas ukuran unggahan |
 
 Membuat `SECRET_KEY` baru:
@@ -219,6 +219,18 @@ Konfigurasi manual (bila tidak memakai Blueprint):
 | Build command | `./build.sh` |
 | Start command | `cd src && python manage.py migrate --noinput && python manage.py seed_demo && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
 | Env | `DJANGO_DEBUG=False`, `DJANGO_SECRET_KEY=<acak>`, `PYTHON_VERSION=3.12.3` |
+
+**Menyimpan data agar tidak hilang:** SQLite di paket gratis Render bersifat sementara.
+Isi environment variable `DATABASE_URL` dengan connection string Neon (Postgres gratis),
+lalu deploy ulang. Panduan lengkap — termasuk koneksi DBeaver/pgAdmin dan cadangan —
+ada di [`docs/12-database-dan-backup.md`](docs/12-database-dan-backup.md).
+
+Cadangan basis data + media:
+
+```bash
+scripts/backup.sh        # hasil di backups/<tanggal-jam>/
+scripts/restore.sh backups/<tanggal-jam>/database.dump
+```
 
 **Keterbatasan paket gratis Render** (penting untuk dinyatakan saat presentasi):
 
