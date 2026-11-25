@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Buat Tugas — SIKULIAH{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.pk %}">{{ course.code }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Buat tugas</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">Buat tugas — {{ course.code }} {{ course.name }}</div>
+      <div class="card-body">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label required" for="{{ form.title.id_for_label }}">Judul tugas</label>
+            {{ form.title }}
+            {% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label required" for="{{ form.description.id_for_label }}">Deskripsi</label>
+            {{ form.description }}
+            <div class="form-text">Jelaskan instruksi, format berkas, dan kriteria penilaian.</div>
+            {% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required" for="{{ form.due_at.id_for_label }}">Tenggat</label>
+              {{ form.due_at }}
+              {% for error in form.due_at.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required" for="{{ form.max_score.id_for_label }}">Nilai maksimum</label>
+              {{ form.max_score }}
+              {% for error in form.max_score.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="{{ form.attachment.id_for_label }}">Lampiran (opsional)</label>
+              {{ form.attachment }}
+              <div class="form-text">PDF, DOCX, PPTX, atau ZIP. Maksimum 5 MB.</div>
+              {% for error in form.attachment.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Simpan tugas</button>
+            <a class="btn btn-outline-secondary" href="{% url 'courses:detail' course.pk %}">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

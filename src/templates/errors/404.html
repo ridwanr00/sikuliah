@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Halaman tidak ditemukan — SIKULIAH{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-lg-6 text-center">
+    <p class="display-4 fw-bold text-secondary mb-1">404</p>
+    <h1 class="h4 fw-bold mb-2">Halaman tidak ditemukan</h1>
+    <p class="text-secondary">
+      Alamat yang Anda buka tidak tersedia. Periksa kembali tautan atau kembali
+      ke halaman utama.
+    </p>
+    <a class="btn btn-primary" href="{% url 'home' %}">Ke beranda</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ course_count }}</div>
+        <div class="stat-label">Mata kuliah</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ student_count }}</div>
+        <div class="stat-label">Peserta terdaftar</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ submission_rate }}%</div>
+        <div class="stat-label">
+          Tingkat pengumpulan ({{ submitted_count }}/{{ expected_submissions }})
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">
+          {% if average_score is not None %}{{ average_score }}{% else %}—{% endif %}
+        </div>
+        <div class="stat-label">Rata-rata nilai ({{ graded_count }} dinilai)</div>
+      </div>
+    </div>
+  </div>
+</div>

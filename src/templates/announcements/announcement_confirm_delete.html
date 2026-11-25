@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Hapus Pengumuman — SIKULIAH{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-danger">
+      <div class="card-header text-danger">Konfirmasi hapus pengumuman</div>
+      <div class="card-body">
+        <p>Hapus pengumuman <strong>{{ object.title }}</strong> dari {{ course.code }}?</p>
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Ya, hapus</button>
+          <a class="btn btn-outline-secondary" href="{% url 'courses:detail' course.pk %}">Batal</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

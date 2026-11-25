@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Masuk — SIKULIAH{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 fw-bold mb-1">Masuk ke SIKULIAH</h1>
+        <p class="text-secondary small mb-4">Gunakan surel kampus dan kata sandi Anda.</p>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next }}">
+
+          <div class="mb-3">
+            <label class="form-label required" for="id_username">Surel</label>
+            <input type="email" name="username" id="id_username" class="form-control"
+                   value="{{ form.username.value|default:'' }}" autocomplete="username" required
+                   placeholder="nama@kampus.test">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label required" for="id_password">Kata sandi</label>
+            <input type="password" name="password" id="id_password" class="form-control"
+                   autocomplete="current-password" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Masuk</button>
+        </form>
+
+        <hr class="my-4">
+        <p class="small text-secondary mb-1">Akun demo (data seeder):</p>
+        <ul class="small text-secondary mb-0">
+          <li>admin@kampus.test / admin12345</li>
+          <li>dosen1@kampus.test / dosen12345</li>
+          <li>mhs01@kampus.test / mhs12345</li>
+        </ul>
+      </div>
+    </div>
+    <p class="text-center small text-secondary mt-3 mb-0">
+      Belum punya akun? Hubungi admin program studi.
+    </p>
+  </div>
+</div>
+{% endblock %}

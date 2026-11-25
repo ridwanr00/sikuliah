@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.code }} — SIKULIAH{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dasbor</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ course.code }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between gap-3">
+      <div>
+        <span class="course-code">{{ course.code }}</span>
+        <h1 class="page-title mb-1">{{ course.name }}</h1>
+        <p class="text-secondary small mb-0">
+          {{ course.lecturer.full_name }} · {{ course.credits }} SKS ·
+          {{ course.semester }} {{ course.academic_year }}
+          {% if user.is_mahasiswa or user.is_admin %}· {{ student_count }} peserta{% endif %}
+        </p>
+        {% if course.description %}
+          <p class="small text-secondary mt-2 mb-0">{{ course.description }}</p>
+        {% endif %}
+      </div>
+      {% if can_manage %}
+        <div class="d-flex flex-wrap gap-2 align-items-start">
+          <a class="btn btn-sm btn-primary" href="{% url 'materials:create' course.pk %}">+ Materi</a>
+          <a class="btn btn-sm btn-primary" href="{% url 'assignments:create' course.pk %}">+ Tugas</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{% url 'announcements:create' course.pk %}">+ Pengumuman</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<ul class="nav nav-pills mb-3" role="tablist">
+  <li class="nav-item"><a class="nav-link active" href="#materi">Materi <span class="badge text-bg-light">{{ materials|length }}</span></a></li>
+  <li class="nav-item"><a class="nav-link" href="#tugas">Tugas <span class="badge text-bg-light">{{ assignments|length }}</span></a></li>
+  <li class="nav-item"><a class="nav-link" href="#pengumuman">Pengumuman</a></li>
+</ul>
+
+<!-- Materi -->
+<section id="materi" class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Materi pembelajaran</span>
+    {% if can_manage %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'materials:create' course.pk %}">Tambah materi</a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" style="width:110px">Pertemuan</th>
+          <th scope="col">Judul</th>
+          <th scope="col" class="d-none d-md-table-cell">Berkas</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for material in materials %}
+          <tr>
+            <td><span class="badge text-bg-light">Pertemuan {{ material.meeting_no }}</span></td>
+            <td>
+              <div class="fw-semibold">{{ material.title }}</div>
+              {% if material.is_required %}<span class="badge text-bg-warning">Wajib</span>{% endif %}
+              {% if material.description %}<div class="small text-secondary">{{ material.description }}</div>{% endif %}
+            </td>
+            <td class="small text-secondary d-none d-md-table-cell">
+              {% if material.file %}{{ material.size_display }}{% else %}Tautan eksternal{% endif %}
+              <div>{{ material.uploaded_at|date:"d/m/Y" }}</div>
+            </td>
+            <td class="text-end">
+              <div class="d-flex flex-column flex-sm-row gap-1 justify-content-end">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'materials:download' material.pk %}">
+                  {% if material.external_url %}Buka{% else %}Unduh{% endif %}
+                </a>
+                {% if can_manage %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'materials:update' course.pk material.pk %}">Ubah</a>
+                  <a class="btn btn-sm btn-outline-danger" href="{% url 'materials:delete' course.pk material.pk %}">Hapus</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                Belum ada materi pada mata kuliah ini.
+                {% if can_manage %}
+                  <div class="mt-2"><a class="btn btn-sm btn-primary" href="{% url 'materials:create' course.pk %}">Unggah materi pertama</a></div>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Tugas -->
+<section id="tugas" class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Tugas</span>
+    {% if can_manage %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'assignments:create' course.pk %}">Buat tugas</a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Tugas</th>
+          <th scope="col">Tenggat</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in assignment_rows %}
+          <tr>
+            <td>
+              <a class="fw-semibold text-decoration-none" href="{% url 'assignments:detail' row.assignment.pk %}">
+                {{ row.assignment.title }}
+              </a>
+              <div class="small text-secondary">Nilai maksimum {{ row.assignment.max_score }}</div>
+            </td>
+            <td class="small">{{ row.assignment.due_at|date:"d/m/Y H:i" }}</td>
+            <td>
+              {% if user.is_mahasiswa %}
+                {% if row.submission %}
+                  {% if row.submission.is_graded %}
+                    <span class="badge text-bg-success">Dinilai: {{ row.submission.score }}</span>
+                  {% else %}
+                    <span class="badge text-bg-info">Terkumpul</span>
+                  {% endif %}
+                {% elif row.assignment.is_past_due %}
+                  <span class="badge text-bg-danger">Lewat tenggat</span>
+                {% else %}
+                  <span class="badge text-bg-warning">Belum dikumpulkan</span>
+                {% endif %}
+              {% else %}
+                <span class="badge {% if row.assignment.is_past_due %}text-bg-secondary{% else %}text-bg-success{% endif %}">
+                  {{ row.assignment.status_label }}
+                </span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if can_manage %}
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'assignments:submissions' row.assignment.pk %}">Pengumpulan</a>
+              {% else %}
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'assignments:detail' row.assignment.pk %}">Buka</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="empty-state">Belum ada tugas.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Pengumuman -->
+<section id="pengumuman" class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Pengumuman</span>
+    {% if can_manage %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'announcements:create' course.pk %}">Tulis pengumuman</a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% for announcement in announcements %}
+      <article class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <h2 class="h6 fw-semibold mb-1">{{ announcement.title }}</h2>
+          <span class="small text-secondary text-nowrap">{{ announcement.published_at|date:"d/m/Y H:i" }}</span>
+        </div>
+        <p class="mb-0 small">{{ announcement.body|linebreaksbr }}</p>
+        {% if can_manage %}
+          <a class="small text-danger" href="{% url 'announcements:delete' course.pk announcement.pk %}">Hapus</a>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state">Belum ada pengumuman.</div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if participants %}
+<section class="card">
+  <div class="card-header">Peserta ({{ student_count }})</div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th scope="col">Nama</th><th scope="col">NIM</th><th scope="col">Terdaftar</th></tr>
+      </thead>
+      <tbody>
+        {% for enrollment in participants %}
+          <tr>
+            <td>{{ enrollment.student.full_name }}</td>
+            <td class="small text-secondary">{{ enrollment.student.identity_number }}</td>
+            <td class="small">{{ enrollment.enrolled_at|date:"d/m/Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

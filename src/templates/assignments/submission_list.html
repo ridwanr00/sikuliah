@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Pengumpulan {{ assignment.title }} — SIKULIAH{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.pk %}">{{ course.code }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Pengumpulan</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div>
+    <p class="text-secondary small mb-1">{{ course.code }} · {{ assignment.title }}</p>
+    <h1 class="page-title mb-0">Daftar pengumpulan</h1>
+  </div>
+  <span class="badge {% if assignment.is_past_due %}text-bg-secondary{% else %}text-bg-success{% endif %}">
+    {{ assignment.status_label }} · {{ assignment.due_at|date:"d/m/Y H:i" }}
+  </span>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100"><div class="card-body">
+      <div class="stat-value">{{ total_students }}</div><div class="stat-label">Peserta</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100"><div class="card-body">
+      <div class="stat-value">{{ submitted }}</div><div class="stat-label">Terkumpul</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100"><div class="card-body">
+      <div class="stat-value">{{ graded }}</div><div class="stat-label">Sudah dinilai</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100"><div class="card-body">
+      <div class="stat-value">{% if average %}{{ average|floatformat:1 }}{% else %}—{% endif %}</div>
+      <div class="stat-label">Rata-rata nilai</div>
+    </div></div>
+  </div>
+</div>
+
+<form method="get" class="row g-2 mb-3" role="search">
+  <div class="col-sm-6 col-lg-4">
+    <label class="visually-hidden" for="q">Cari mahasiswa</label>
+    <input type="search" class="form-control" id="q" name="q" value="{{ query }}"
+           placeholder="Cari nama atau NIM…">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary" type="submit">Cari</button>
+    {% if query %}<a class="btn btn-outline-secondary" href="{% url 'assignments:submissions' assignment.pk %}">Reset</a>{% endif %}
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Mahasiswa</th>
+          <th scope="col">Waktu unggah</th>
+          <th scope="col">Berkas</th>
+          <th scope="col" class="text-center">Nilai</th>
+          <th scope="col" class="text-end">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ row.student.full_name }}</div>
+              <div class="small text-secondary">{{ row.student.identity_number }}</div>
+            </td>
+            <td class="small">
+              {% if row.submission %}
+                {{ row.submission.submitted_at|date:"d/m/Y H:i" }}
+              {% else %}
+                <span class="text-secondary">—</span>
+              {% endif %}
+            </td>
+            <td class="small">
+              {% if row.submission %}
+                <a href="{% url 'assignments:download' row.submission.pk %}">{{ row.submission.original_filename }}</a>
+              {% else %}
+                <span class="badge text-bg-danger">Belum mengumpulkan</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.submission and row.submission.is_graded %}
+                <span class="badge text-bg-success">{{ row.submission.score }}</span>
+              {% else %}
+                <span class="text-secondary">—</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if row.submission %}
+                <a class="btn btn-sm {% if row.submission.is_graded %}btn-outline-secondary{% else %}btn-primary{% endif %}"
+                   href="{% url 'assignments:grade' row.submission.pk %}">
+                  {% if row.submission.is_graded %}Ubah nilai{% else %}Nilai{% endif %}
+                </a>
+              {% else %}
+                <span class="text-secondary small">Tidak ada berkas</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state">Tidak ada peserta yang cocok.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

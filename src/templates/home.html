@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}SIKULIAH — LMS Kampus{% endblock %}
+
+{% block content %}
+<section class="hero p-4 p-lg-5 mb-4">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <p class="text-uppercase small mb-2" style="letter-spacing:.12em;color:#fbbf24">
+        Learning Management System
+      </p>
+      <h1 class="display-6 fw-bold mb-3">Satu tempat untuk materi, tugas, dan nilai perkuliahan</h1>
+      <p class="lead mb-4">
+        SIKULIAH memusatkan distribusi materi, pengumpulan tugas, penilaian, dan
+        statistik perkuliahan dalam satu aplikasi web yang mudah dipakai dosen
+        maupun mahasiswa.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'login' %}" class="btn btn-warning fw-semibold">Masuk ke aplikasi</a>
+        <a href="#fitur" class="btn btn-outline-light">Lihat fitur</a>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="bg-white text-dark rounded-3 p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-semibold small">Tugas 2 — Perancangan Sistem</span>
+          <span class="badge bg-success">Aktif</span>
+        </div>
+        <div class="progress mb-2" role="progressbar" aria-label="Progres pengumpulan" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" style="height:8px">
+          <div class="progress-bar bg-success" style="width:62%"></div>
+        </div>
+        <div class="d-flex justify-content-between small text-secondary">
+          <span>62% terkumpul</span>
+          <span>progres pengumpulan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="fitur" class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="section-title mb-2">Materi terpusat</h2>
+        <p class="text-secondary mb-0">
+          Dosen mengunggah materi per pertemuan; mahasiswa mengunduh dari satu
+          halaman mata kuliah, lengkap dengan penanda materi wajib.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="section-title mb-2">Pengumpulan &amp; penilaian</h2>
+        <p class="text-secondary mb-0">
+          Pengumpulan berkas tercatat dengan waktu server, divalidasi format dan
+          ukurannya, lalu dinilai beserta umpan balik.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h2 class="section-title mb-2">Statistik perkuliahan</h2>
+        <p class="text-secondary mb-0">
+          Tingkat pengumpulan dan sebaran nilai tersaji sebagai dasar evaluasi
+          tengah semester.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Tiga peran, tiga tampilan</div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li><strong>Admin</strong> — mengelola pengguna, mata kuliah, dan pendaftaran.</li>
+          <li><strong>Dosen</strong> — mengunggah materi, membuat tugas, menilai.</li>
+          <li><strong>Mahasiswa</strong> — mendaftar mata kuliah, mengunduh materi, mengumpulkan tugas.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Dibangun dengan</div>
+      <div class="card-body">
+        <p class="mb-2">Python 3.12 · Django 5.2 · Bootstrap 5.3 · Chart.js</p>
+        <p class="text-secondary small mb-0">
+          Validasi di sisi server, otorisasi berbasis peran, dan basis data
+          relasional dengan migrasi yang tercatat.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

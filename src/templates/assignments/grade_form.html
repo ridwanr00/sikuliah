@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Nilai — {{ submission.student.full_name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:detail' assignment.course.pk %}">{{ assignment.course.code }}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'assignments:submissions' assignment.pk %}">Pengumpulan</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Nilai</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Berkas yang dikumpulkan</div>
+      <div class="card-body">
+        <p class="fw-semibold mb-1">{{ submission.student.full_name }}</p>
+        <p class="small text-secondary">{{ submission.student.identity_number }}</p>
+        <dl class="row small mb-0">
+          <dt class="col-5">Tugas</dt><dd class="col-7">{{ assignment.title }}</dd>
+          <dt class="col-5">Dikumpulkan</dt><dd class="col-7">{{ submission.submitted_at|date:"d/m/Y H:i" }}</dd>
+          <dt class="col-5">Nama berkas</dt><dd class="col-7 text-break">{{ submission.original_filename }}</dd>
+          <dt class="col-5">Nilai maksimum</dt><dd class="col-7">{{ assignment.max_score }}</dd>
+        </dl>
+        <a class="btn btn-sm btn-outline-primary mt-3" href="{% url 'assignments:download' submission.pk %}">
+          Unduh berkas jawaban
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">Nilai dan umpan balik</div>
+      <div class="card-body">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label required" for="{{ form.score.id_for_label }}">
+              Nilai (0–{{ assignment.max_score }})
+            </label>
+            {{ form.score }}
+            {% for error in form.score.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.feedback.id_for_label }}">Umpan balik</label>
+            {{ form.feedback }}
+            <div class="form-text">Tuliskan catatan yang dapat dibaca mahasiswa.</div>
+            {% for error in form.feedback.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Simpan nilai</button>
+            <a class="btn btn-outline-secondary" href="{% url 'assignments:submissions' assignment.pk %}">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

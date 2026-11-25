@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Ubah{% else %}Tambah{% endif %} Materi — SIKULIAH{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.pk %}">{{ course.code }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if object %}Ubah{% else %}Tambah{% endif %} materi</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        {% if object %}Ubah materi{% else %}Tambah materi{% endif %} — {{ course.code }}
+      </div>
+      <div class="card-body">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label required" for="{{ form.title.id_for_label }}">Judul materi</label>
+              {{ form.title }}
+              {% for error in form.title.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required" for="{{ form.meeting_no.id_for_label }}">Pertemuan</label>
+              {{ form.meeting_no }}
+              {% for error in form.meeting_no.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="{{ form.description.id_for_label }}">Deskripsi singkat</label>
+              {{ form.description }}
+              {% for error in form.description.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.file.id_for_label }}">Berkas materi</label>
+              {{ form.file }}
+              <div class="form-text">PDF, DOCX, PPTX, atau ZIP. Maksimum 5 MB.</div>
+              {% for error in form.file.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              {% if object.file %}
+                <div class="small text-secondary mt-1">Berkas saat ini: {{ object.filename }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.external_url.id_for_label }}">atau tautan eksternal</label>
+              {{ form.external_url }}
+              <div class="form-text">Isi salah satu: berkas atau tautan.</div>
+              {% for error in form.external_url.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                {{ form.is_required }}
+                <label class="form-check-label" for="{{ form.is_required.id_for_label }}">
+                  Tandai sebagai materi wajib
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+              {% if object %}Simpan perubahan{% else %}Unggah materi{% endif %}
+            </button>
+            <a class="btn btn-outline-secondary" href="{% url 'courses:detail' course.pk %}">Batal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

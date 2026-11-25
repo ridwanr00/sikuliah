@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ assignment.title }} — SIKULIAH{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'courses:list' %}">Mata kuliah</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.pk %}">{{ course.code }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ assignment.title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+          <div>
+            <span class="course-code">{{ course.code }} · {{ course.name }}</span>
+            <h1 class="page-title mb-1">{{ assignment.title }}</h1>
+          </div>
+          <span class="badge {% if assignment.is_past_due %}text-bg-secondary{% else %}text-bg-success{% endif %}">
+            {{ assignment.status_label }}
+          </span>
+        </div>
+
+        <p class="small text-secondary mb-3">
+          Tenggat <strong>{{ assignment.due_at|date:"d/m/Y H:i" }}</strong> ·
+          Nilai maksimum {{ assignment.max_score }}
+        </p>
+
+        <h2 class="section-title">Deskripsi</h2>
+        <p>{{ assignment.description|linebreaksbr }}</p>
+
+        {% if assignment.attachment %}
+          <a class="btn btn-sm btn-outline-secondary" href="{{ assignment.attachment.url }}">
+            Unduh lampiran tugas
+          </a>
+        {% endif %}
+
+        {% if not user.is_mahasiswa %}
+          <hr>
+          <a class="btn btn-primary" href="{% url 'assignments:submissions' assignment.pk %}">
+            Lihat daftar pengumpulan
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% if user.is_mahasiswa %}
+      <div class="card mb-3">
+        <div class="card-header">Status pengumpulan</div>
+        <div class="card-body">
+          {% if submission %}
+            <p class="mb-1">
+              <span class="badge {% if submission.is_graded %}text-bg-success{% else %}text-bg-info{% endif %}">
+                {{ submission.status_label }}
+              </span>
+            </p>
+            <p class="small text-secondary mb-2">
+              Dikumpulkan {{ submission.submitted_at|date:"d/m/Y H:i" }} ·
+              {{ submission.original_filename }}
+            </p>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'assignments:download' submission.pk %}">
+              Unduh berkas saya
+            </a>
+          {% elif assignment.is_past_due %}
+            <div class="alert alert-danger py-2 mb-0">
+              Tenggat telah berakhir dan tidak ada berkas yang dikumpulkan.
+            </div>
+          {% else %}
+            <p class="small text-secondary mb-0">Anda belum mengumpulkan tugas ini.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if can_submit %}
+        <div class="card mb-3">
+          <div class="card-header">{% if submission %}Unggah berkas pengganti{% else %}Kumpulkan tugas{% endif %}</div>
+          <div class="card-body">
+            <form method="post" action="{% url 'assignments:submit' assignment.pk %}"
+                  enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+              <label class="form-label required" for="id_file">Berkas jawaban</label>
+              <input type="file" name="file" id="id_file" class="form-control" required>
+              <div class="form-text">PDF, DOCX, PPTX, atau ZIP. Maksimum 5 MB.</div>
+              <button type="submit" class="btn btn-primary mt-3">
+                {% if submission %}Ganti berkas{% else %}Kumpulkan{% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+      {% elif submission and submission.is_graded %}
+        <div class="alert alert-secondary py-2">
+          Tugas sudah dinilai, berkas tidak dapat diganti.
+        </div>
+      {% endif %}
+
+      {% if submission and submission.is_graded %}
+        <div class="card border-success">
+          <div class="card-header text-success">Nilai dan umpan balik</div>
+          <div class="card-body">
+            <p class="display-6 fw-bold mb-1">{{ submission.score }}<span class="fs-6 text-secondary">/{{ assignment.max_score }}</span></p>
+            <p class="small text-secondary mb-2">Dinilai {{ submission.graded_at|date:"d/m/Y H:i" }}</p>
+            {% if submission.feedback %}
+              <p class="mb-0">{{ submission.feedback|linebreaksbr }}</p>
+            {% else %}
+              <p class="text-secondary mb-0">Dosen tidak menuliskan umpan balik.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

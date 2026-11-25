@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Dasbor Mahasiswa — SIKULIAH{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <div>
+    <p class="text-secondary small mb-1">Dasbor</p>
+    <h1 class="page-title mb-0">Halo, {{ user.full_name }}</h1>
+  </div>
+  <a href="{% url 'courses:list' %}" class="btn btn-primary btn-sm">Cari mata kuliah</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ courses|length }}</div>
+        <div class="stat-label">Mata kuliah diikuti</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ submission_count }}</div>
+        <div class="stat-label">Tugas terkumpul</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Tugas menunggu dikumpulkan</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="card-body">
+        <div class="stat-value">{% if average_score is not None %}{{ average_score }}{% else %}—{% endif %}</div>
+        <div class="stat-label">Rata-rata nilai ({{ graded_count }} dinilai)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Tenggat terdekat</div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Tugas</th>
+              <th scope="col">Mata kuliah</th>
+              <th scope="col">Tenggat</th>
+              <th scope="col" class="text-end">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for assignment in deadlines %}
+                <tr>
+                  <td>
+                    <a class="text-decoration-none fw-semibold" href="{% url 'assignments:detail' assignment.pk %}">
+                      {{ assignment.title }}
+                    </a>
+                  </td>
+                  <td class="small">{{ assignment.course.code }}</td>
+                  <td class="small">{{ assignment.due_at|date:"d/m/Y H:i" }}</td>
+                  <td class="text-end">
+                    {% if assignment.id in my_submissions %}
+                      <span class="badge text-bg-success">Terkumpul</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">Belum</span>
+                    {% endif %}
+                  </td>
+                </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state">Tidak ada tenggat dalam waktu dekat.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Mata kuliah saya</div>
+      <ul class="list-group list-group-flush">
+        {% for course in courses %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a class="text-decoration-none fw-semibold" href="{% url 'courses:detail' course.pk %}">{{ course.name }}</a>
+              <div class="small text-secondary">{{ course.code }} · {{ course.lecturer.full_name }}</div>
+            </div>
+            <span class="badge text-bg-light">{{ course.credits }} SKS</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item">
+            <div class="empty-state">
+              Anda belum terdaftar pada mata kuliah.
+              <div class="mt-2"><a class="btn btn-sm btn-primary" href="{% url 'courses:list' %}">Lihat katalog</a></div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
