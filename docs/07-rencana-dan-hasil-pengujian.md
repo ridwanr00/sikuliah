@@ -183,6 +183,8 @@ Dinyatakan sebagai keterbatasan di bab akhir PDF.
 |-----|----|--------|----------|-----------|-----------|--------|
 | BUG-01 | TC-04 | Pesan "Isi salah satu…" muncul dua kali di form materi | Validasi yang sama dilakukan di `MaterialForm.clean()` dan `Material.clean()` | Hapus validasi ganda di form, sisakan di model | TC-04 lulus, pesan tunggal | ✅ |
 | BUG-02 | Statistik | Tingkat pengumpulan dosen tampil 30% padahal data ~74% | Target dihitung `total peserta × total tugas`, padahal tiap mata kuliah punya peserta dan tugas berbeda | Hitung `Σ(peserta mata kuliah × jumlah tugas mata kuliah)` | Dasbor menunjukkan 74% (61/82) | ✅ |
+| BUG-05 | Object storage | Berkas demo tidak muncul di bucket B2 setelah `USE_S3_STORAGE=True` | (a) hanya unggahan baru yang memakai bucket, (b) konfigurasi awal memakai virtual-host yang tidak didukung B2 | (a) tambah perintah `sync_media`, (b) `AWS_S3_ADDRESSING_STYLE=path` otomatis untuk endpoint kustom | `sync_media --check` sukses, berkas muncul di bucket | ✅ |
+| BUG-04 | Unduh berkas | Pemilik berkas mendapat 403 saat mengunduh setelah instance hosting restart | Berkas hilang karena disk sementara, sedangkan view mengubah `FileNotFoundError` menjadi `PermissionDenied` | Cek `storage.exists()` lalu kembalikan 404; `seed_demo` memulihkan berkas demo yang hilang | Unduh berhasil (200) untuk pemilik; berkas hilang → 404 | ✅ |
 | BUG-03 | TC-08 | Tombol "Unduh" terpotong pada layar 390 px | Kolom berkas + tiga tombol aksi memaksa lebar tabel melebihi layar | Sembunyikan kolom berkas di layar kecil, tombol menumpuk vertikal | Screenshot 390 px tanpa clipping | ✅ |
 
 ## 7. Kriteria keluar (exit criteria)

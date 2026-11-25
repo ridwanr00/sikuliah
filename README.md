@@ -108,7 +108,16 @@ Isi nilai pada `.env`:
 Untuk menyimpan berkas unggahan di object storage (opsional, lihat
 [`docs/12`](docs/12-database-dan-backup.md) §6): `USE_S3_STORAGE=True`,
 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME`,
-`AWS_S3_ENDPOINT_URL`, `AWS_S3_REGION_NAME`.
+`AWS_S3_ENDPOINT_URL`, `AWS_S3_REGION_NAME` (opsional `AWS_S3_ADDRESSING_STYLE`,
+default `path` untuk B2/Supabase).
+
+Setelah mengaktifkan storage, berkas lama tidak pindah sendiri:
+
+```bash
+python manage.py sync_media --check     # uji kredensial bucket
+python manage.py sync_media --dry-run   # lihat rencana
+python manage.py sync_media             # unggah berkas lokal yang belum ada
+```
 
 Membuat `SECRET_KEY` baru:
 
@@ -200,6 +209,9 @@ Bukti tangkapan layar ada di [`screenshots/`](screenshots/).
 | `Error: That port is already in use` | Server lain di port 8000 | `python manage.py runserver 8001` |
 | Gaya CSS tidak muncul | `DEBUG=False` tanpa static server | Jalankan `collectstatic` atau set `DEBUG=True` untuk demo lokal |
 | Data ingin direset | Basis data uji kotor | `rm db.sqlite3 && python manage.py migrate && python manage.py seed_demo` |
+| 404 saat mengunduh berkas | Berkas hilang dari disk (hosting memakai penyimpanan sementara) | Jalankan `python manage.py seed_demo` untuk memulihkan berkas demo, unggah ulang berkas asli, atau aktifkan `USE_S3_STORAGE` |
+| 403 saat mengunduh berkas | Bukan pemilik berkas dan bukan dosen pengampu | Login sebagai pemilik atau dosen pengampu; 403 ini memang disengaja |
+| Berkas tidak muncul di bucket B2 | `USE_S3_STORAGE` belum aktif, kredensial salah, atau berkas lama belum disinkronkan | Jalankan `sync_media --check`, lalu `sync_media`; pastikan endpoint memakai path-style |
 
 ## 12. Keterbatasan
 

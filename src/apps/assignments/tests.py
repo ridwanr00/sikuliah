@@ -115,6 +115,25 @@ class SubmissionFlowTests(TestCase):
         submission.refresh_from_db()
         self.assertIsNone(submission.score)
 
+    def test_pemilik_dapat_mengunduh_berkas(self):
+        submission = Submission.objects.create(
+            assignment=self.assignment, student=self.student,
+            file=make_pdf(), original_filename="jawaban.pdf",
+        )
+        self.client.force_login(self.student)
+        response = self.client.get(f"/tugas/pengumpulan/{submission.pk}/unduh/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_berkas_hilang_menghasilkan_404_bukan_403(self):
+        submission = Submission.objects.create(
+            assignment=self.assignment, student=self.student,
+            file=make_pdf(), original_filename="jawaban.pdf",
+        )
+        submission.file.delete(save=False)
+        self.client.force_login(self.student)
+        response = self.client.get(f"/tugas/pengumpulan/{submission.pk}/unduh/")
+        self.assertEqual(response.status_code, 404)
+
     def test_dosen_lain_tidak_dapat_menilai(self):
         submission = Submission.objects.create(
             assignment=self.assignment,

@@ -131,7 +131,12 @@ if USE_S3_STORAGE:
     AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default="")
     AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="")
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_ADDRESSING_STYLE = "virtual"
+    # B2 dan Supabase memakai path-style (bucket di path URL), bukan virtual-host.
+    # AWS asli tetap memakai virtual-host.
+    AWS_S3_ADDRESSING_STYLE = config(
+        "AWS_S3_ADDRESSING_STYLE",
+        default="path" if AWS_S3_ENDPOINT_URL else "virtual",
+    )
     AWS_DEFAULT_ACL = None          # bucket tetap privat
     AWS_QUERYSTRING_AUTH = True     # tautan sementara bertanda tangan
     AWS_S3_FILE_OVERWRITE = False
@@ -147,6 +152,7 @@ if USE_S3_STORAGE:
             "default_acl": None,
             "querystring_auth": True,
             "file_overwrite": False,
+            "addressing_style": AWS_S3_ADDRESSING_STYLE,
         },
     }
 

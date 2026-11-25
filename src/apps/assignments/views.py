@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Avg, Count, Q
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -198,8 +198,12 @@ def download_submission(request, pk):
     if not (is_owner or submission.assignment.course.can_manage(request.user)):
         raise PermissionDenied
 
-    try:
-        handle = submission.file.open("rb")
-    except FileNotFoundError as exc:
-        raise PermissionDenied("Berkas tidak ditemukan.") from exc
+    # Berkas bisa hilang (disk sementara hosting) meski record masih ada.
+    # Itu bukan masalah izin: kembalikan 404 agar pesannya tidak menyesatkan.
+    if not submission.file or not submission.file.storage.exists(submission.file.name):
+        raise Http404(
+            "Berkas pengumpulan tidak ditemukan pada penyimpanan. "
+            "Minta mahasiswa mengunggah ulang atau aktifkan object storage."
+        )
+    handle = submission.file.open("rb")
     return FileResponse(handle, as_attachment=True, filename=submission.original_filename)

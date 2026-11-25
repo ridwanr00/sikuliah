@@ -72,13 +72,13 @@ def download(request, pk):
     if material.external_url:
         return HttpResponseRedirect(material.external_url)
 
-    if not material.file:
-        raise Http404("Berkas materi tidak tersedia.")
+    if not material.file or not material.file.storage.exists(material.file.name):
+        raise Http404(
+            "Berkas materi tidak ditemukan pada penyimpanan. "
+            "Unggah ulang materi atau aktifkan object storage."
+        )
 
-    try:
-        handle = material.file.open("rb")
-    except FileNotFoundError as exc:
-        raise Http404("Berkas materi tidak ditemukan di penyimpanan.") from exc
+    handle = material.file.open("rb")
 
     filename = Path(material.file.name).name
     return FileResponse(handle, as_attachment=True, filename=filename)

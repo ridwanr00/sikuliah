@@ -65,6 +65,62 @@ def minimal_pdf(title: str, body: str) -> bytes:
 class Command(BaseCommand):
     help = "Mengisi basis data dengan data demo SIKULIAH (idempoten)."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--no-refresh-files",
+            action="store_true",
+            help="Jangan buat ulang berkas demo yang hilang dari penyimpanan.",
+        )
+
+    def refresh_missing_files(self) -> tuple[int, int]:
+        """Buat ulang berkas demo yang recordnya ada tetapi filenya hilang.
+
+        Terjadi ketika hosting memakai disk sementara: basis data tetap, berkas
+        terhapus saat restart. Hanya menyentuh berkas contoh (PDF sintetis).
+        """
+        restored = 0
+        failed = 0
+
+        for material in Material.objects.select_related("course"):
+            if not material.file:
+                continue
+            try:
+                if material.file.storage.exists(material.file.name):
+                    continue
+                payload = minimal_pdf(
+                    f"{material.course.code} - Pertemuan {material.meeting_no}",
+                    f"Materi: {material.title} (dipulihkan dari data demo).",
+                )
+                material.file.save(
+                    f"{material.course.code.lower()}-pertemuan-{material.meeting_no}.pdf",
+                    ContentFile(payload),
+                    save=True,
+                )
+                restored += 1
+            except Exception:  # noqa: BLE001 - jangan hentikan seed karena satu berkas
+                failed += 1
+
+        for submission in Submission.objects.select_related("student", "assignment"):
+            if not submission.file:
+                continue
+            try:
+                if submission.file.storage.exists(submission.file.name):
+                    continue
+                payload = minimal_pdf(
+                    f"Jawaban {submission.assignment.title}",
+                    f"Mahasiswa: {submission.student.full_name} (dipulihkan dari data demo).",
+                )
+                submission.file.save(
+                    f"jawaban-{submission.student.identity_number}.pdf",
+                    ContentFile(payload),
+                    save=True,
+                )
+                restored += 1
+            except Exception:  # noqa: BLE001
+                failed += 1
+
+        return restored, failed
+
     def handle(self, *args, **options):
         random.seed(42)
         now = timezone.now()
@@ -274,7 +330,17 @@ class Command(BaseCommand):
                 },
             )
 
+        if options.get("no_refresh_files"):
+            restored, failed = 0, 0
+        else:
+            restored, failed = self.refresh_missing_files()
+
         self.stdout.write(self.style.SUCCESS("\nData demo siap."))
+        if restored or failed:
+            self.stdout.write(
+                f"  berkas demo dipulihkan: {restored}"
+                + (f", gagal: {failed}" if failed else "")
+            )
         self.stdout.write("  admin@kampus.test, dosen1@kampus.test, mhs01@kampus.test")
         if generated_pw:
             self.stdout.write(

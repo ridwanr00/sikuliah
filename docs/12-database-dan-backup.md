@@ -248,7 +248,35 @@ Catatan penting:
   dan tautan lampiran memakai *signed URL* berumur pendek.
 - Berkas yang sudah ada di `media/` lokal tidak otomatis pindah; unggah ulang atau
   jalankan sinkronisasi manual bila perlu.
+- Selama belum memakai object storage, `seed_demo` memulihkan **berkas demo** yang hilang
+  setiap kali dijalankan (PDF sintetis). Berkas unggahan asli tidak dapat dipulihkan dan
+  harus diunggah ulang — inilah alasan object storage disarankan.
 - `collectstatic` tidak terpengaruh — CSS/JS tetap dibundel WhiteNoise, bukan ke bucket.
+### 6.2 Berkas lama tidak ikut pindah
+
+Mengaktifkan `USE_S3_STORAGE` hanya mengubah **unggahan baru**. Berkas yang sudah ada di
+`media/` tetap di disk. Untuk memindahkannya:
+
+```bash
+python manage.py sync_media --check     # pastikan bucket dapat ditulis/dibaca
+python manage.py sync_media --dry-run   # daftar berkas yang akan diunggah
+python manage.py sync_media             # unggah + perbarui path di basis data
+```
+
+Perintah ini memakai `DATABASE_URL` dan variabel `AWS_*` yang sama, jadi jalankan dari
+komputer yang memiliki folder `media/` dan akses ke basis data yang dipakai aplikasi.
+
+Berkas demo yang hilang karena disk sementara dipulihkan otomatis oleh `seed_demo`
+(PDF sintetis). Berkas unggahan asli yang hilang **tidak** dapat dipulihkan dan harus
+diunggah ulang lewat aplikasi.
+
+### 6.3 Backblaze butuh path-style
+
+B2 tidak mendukung virtual-hosted style (`bucket.endpoint/...`). Aplikasi otomatis
+memakai `path` bila `AWS_S3_ENDPOINT_URL` diisi. Bila memakai konfigurasi manual,
+set `AWS_S3_ADDRESSING_STYLE=path`. Gejalanya bila salah: unggah gagal dengan
+`EndpointConnectionError` atau berkas tidak pernah muncul di bucket.
+
 - Untuk Supabase Storage, polanya sama: `AWS_S3_ENDPOINT_URL=https://<project>.supabase.co/storage/v1/s3`,
   bucket privat, dan `AWS_S3_REGION_NAME` sesuai region project.
 
