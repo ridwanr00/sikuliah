@@ -6,8 +6,10 @@ Membuat data yang cukup untuk demonstrasi dan pengujian TC-01…TC-08:
 """
 
 import random
+import secrets
 from datetime import timedelta
 
+from decouple import config
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -19,9 +21,22 @@ from apps.materials.models import Material
 
 from ...models import Role, User
 
-PASSWORD_ADMIN = "admin12345"
-PASSWORD_DOSEN = "dosen12345"
-PASSWORD_MAHASISWA = "mhs12345"
+
+def demo_passwords() -> tuple[str, str, str, str | None]:
+    """Ambil kata sandi demo dari environment.
+
+    Tidak ada kata sandi yang ditulis di kode/repositori. Bila environment tidak
+    diisi, satu kata sandi acak dibuat dan dicetak sekali agar tetap dapat dipakai.
+    """
+    base = config("DEMO_PASSWORD", default="")
+    generated = None if base else secrets.token_urlsafe(9)
+    fallback = base or generated
+    return (
+        config("DEMO_ADMIN_PASSWORD", default=fallback),
+        config("DEMO_DOSEN_PASSWORD", default=fallback),
+        config("DEMO_MAHASISWA_PASSWORD", default=fallback),
+        generated,
+    )
 
 
 def minimal_pdf(title: str, body: str) -> bytes:
@@ -53,6 +68,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         random.seed(42)
         now = timezone.now()
+        admin_pw, dosen_pw, mahasiswa_pw, generated_pw = demo_passwords()
+        force_password = config("FORCE_DEMO_PASSWORD", default=False, cast=bool)
+
+        def apply_password(user, password, is_new):
+            # Hanya menimpa kata sandi bila akun baru atau FORCE_DEMO_PASSWORD aktif,
+            # supaya perubahan manual tidak hilang tanpa sengaja.
+            if is_new or force_password:
+                user.set_password(password)
+                user.save(update_fields=["password"])
+
+        self.generated_pw = generated_pw
 
         admin, created = User.objects.get_or_create(
             email="admin@kampus.test",
@@ -64,9 +90,8 @@ class Command(BaseCommand):
                 "is_superuser": True,
             },
         )
+        apply_password(admin, admin_pw, created)
         if created:
-            admin.set_password(PASSWORD_ADMIN)
-            admin.save()
             self.stdout.write("  + admin@kampus.test")
 
         lecturers = []
@@ -85,9 +110,7 @@ class Command(BaseCommand):
                     "role": Role.DOSEN,
                 },
             )
-            if created:
-                lecturer.set_password(PASSWORD_DOSEN)
-                lecturer.save()
+            apply_password(lecturer, dosen_pw, created)
             lecturers.append(lecturer)
 
         students = []
@@ -100,9 +123,7 @@ class Command(BaseCommand):
                     "role": Role.MAHASISWA,
                 },
             )
-            if created:
-                student.set_password(PASSWORD_MAHASISWA)
-                student.save()
+            apply_password(student, mahasiswa_pw, created)
             students.append(student)
 
         courses_data = [
@@ -202,6 +223,8 @@ class Command(BaseCommand):
                 course.enrollments.filter(status=Enrollment.Status.ACTIVE).select_related("student")
             )
             for order, assignment in enumerate(course.assignments.order_by("due_at")):
+                if assignment.submissions.exists():
+                    continue  # sudah pernah di-seed; jangan menambah data baru
                 rate = rates[min(order, len(rates) - 1)]
                 for enrollment in enrolled:
                     if random.random() > rate:
@@ -252,9 +275,16 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS("\nData demo siap."))
-        self.stdout.write("  admin@kampus.test / admin12345")
-        self.stdout.write("  dosen1@kampus.test / dosen12345")
-        self.stdout.write("  mhs01@kampus.test / mhs12345")
+        self.stdout.write("  admin@kampus.test, dosen1@kampus.test, mhs01@kampus.test")
+        if generated_pw:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  Kata sandi demo dibuat otomatis: {generated_pw}\n"
+                    "  Catat sekarang; set DEMO_PASSWORD agar nilainya tetap."
+                )
+            )
+        else:
+            self.stdout.write("  Kata sandi demo diambil dari environment (tidak ditampilkan).")
         self.stdout.write(
             f"  {User.objects.count()} pengguna, {Course.objects.count()} mata kuliah, "
             f"{Material.objects.count()} materi, {Assignment.objects.count()} tugas, "

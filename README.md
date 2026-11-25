@@ -102,6 +102,8 @@ Isi nilai pada `.env`:
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Pisahkan dengan koma |
 | `DATABASE_URL` | `postgresql://user:pass@host/neondb?sslmode=require` | Kosongkan untuk SQLite lokal; isi dengan Neon saat online |
 | `MAX_UPLOAD_SIZE_MB` | `5` | Batas ukuran unggahan |
+| `DEMO_PASSWORD` | (rahasia) | Kata sandi akun demo; jangan di-commit |
+| `FORCE_DEMO_PASSWORD` | `False` | `True` = reset kata sandi akun demo setiap `seed_demo` |
 
 Untuk menyimpan berkas unggahan di object storage (opsional, lihat
 [`docs/12`](docs/12-database-dan-backup.md) §6): `USE_S3_STORAGE=True`,
@@ -127,13 +129,17 @@ Buka <http://127.0.0.1:8000>.
 
 ### Akun demo
 
-| Peran | Surel | Kata sandi |
-|-------|-------|------------|
-| Admin | admin@kampus.test | `admin12345` |
-| Dosen | dosen1@kampus.test | `dosen12345` |
-| Mahasiswa | mhs1@kampus.test | `mhs12345` |
+Kredensial **tidak** disimpan di repositori maupun ditampilkan di halaman login.
+Kata sandi dibaca dari environment `DEMO_PASSWORD` (atau variabel per peran).
+Di mesin lokal nilainya ada di `src/.env` dan diringkas di `CREDENTIALS.local.md`
+(keduanya di-ignore git). Bila environment kosong, `seed_demo` membuat kata sandi
+acak dan mencetaknya sekali di terminal.
 
-> Kata sandi di atas hanya untuk lingkungan lokal/demo. Ganti bila aplikasi dipublikasikan.
+| Peran | Surel |
+|-------|-------|
+| Admin | admin@kampus.test |
+| Dosen | dosen1@kampus.test |
+| Mahasiswa | mhs01@kampus.test |
 
 ## 8. Cara menggunakan
 
@@ -214,7 +220,10 @@ Berkas `render.yaml` sudah menyiapkan semuanya (build, start, `SECRET_KEY` acak,
 2. Login dengan GitHub, pilih **Apply** pada Blueprint `sikuliah`.
 3. Tunggu build ± 3 menit; Render memberi URL `https://sikuliah.onrender.com`
    (nama dapat berubah bila sudah dipakai).
-4. Saat pertama kali diakses, server menjalankan `migrate` dan `seed_demo` otomatis,
+4. Tambahkan `DEMO_PASSWORD` (Environment) sebelum deploy pertama; akun demo memakai
+   nilai itu. Untuk mengganti kata sandi lama, set `FORCE_DEMO_PASSWORD=True`, deploy,
+   lalu hapus variabel tersebut.
+5. Saat pertama kali diakses, server menjalankan `migrate` dan `seed_demo` otomatis,
    sehingga akun demo langsung tersedia.
 
 Konfigurasi manual (bila tidak memakai Blueprint):

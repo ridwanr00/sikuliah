@@ -63,8 +63,8 @@ beberapa minggu), karena data bisa hilang tepat saat penilaian.
 5. **Manual Deploy → Deploy latest commit** (atau tunggu auto-deploy).
    Perintah start sudah menjalankan `migrate` lalu `seed_demo`, sehingga tabel dibuat
    dan data demo langsung terisi pada basis data baru.
-6. Verifikasi: buka situs, login `dosen1@kampus.test / dosen12345`, lalu cek angka
-   dasbor. Lakukan satu pengumpulan tugas, kemudian **restart** service dari dashboard
+6. Verifikasi: buka situs, login `dosen1@kampus.test` dengan `DEMO_PASSWORD`, lalu cek
+   angka dasbor. Lakukan satu pengumpulan tugas, kemudian **restart** service dari dashboard
    Render — data harus tetap ada.
 
 > **Catatan:** koneksi *pooled* dipakai untuk aplikasi web. Untuk klien desktop
@@ -254,14 +254,16 @@ Catatan penting:
 
 ## 7. Keamanan
 
-1. `DATABASE_URL` hanya disimpan sebagai environment variable (Render) dan `.env`
+1. Kata sandi akun demo dibaca dari `DEMO_PASSWORD`, bukan ditulis di kode atau
+   ditampilkan pada halaman login. Jangan menampilkannya di README, screenshot, atau video.
+2. `DATABASE_URL` hanya disimpan sebagai environment variable (Render) dan `.env`
    lokal yang masuk `.gitignore`. Jangan pernah menempelkannya di README, screenshot,
    atau video.
-2. Jangan tampilkan dashboard Neon/DBeaver berisi password saat merekam video.
-3. Ganti kata sandi akun demo setelah penilaian, atau hapus service.
-4. Batasi akun yang bisa menulis: aplikasi memakai satu user DB; manusia memakai
+3. Jangan tampilkan dashboard Neon/DBeaver berisi password saat merekam video.
+4. Ganti kata sandi akun demo setelah penilaian, atau hapus service.
+5. Batasi akun yang bisa menulis: aplikasi memakai satu user DB; manusia memakai
    akun `pengamat` (baca-saja).
-5. Aktifkan 2FA pada akun GitHub, Render, dan Neon.
+6. Aktifkan 2FA pada akun GitHub, Render, dan Neon.
 
 ---
 

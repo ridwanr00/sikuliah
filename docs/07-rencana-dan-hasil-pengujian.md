@@ -43,17 +43,17 @@ Dinyatakan sebagai keterbatasan di bab akhir PDF.
 | Basis data | SQLite 3 |
 | Peramban | Chromium 159 (Playwright) dan Brave (mesin pengguna) |
 | URL aplikasi | `http://127.0.0.1:8000` |
-| Data uji | `python manage.py seed_demo` (35 pengguna, 6 mata kuliah, 24 materi, 12 tugas, 123 pengumpulan) |
+| Data uji | `python manage.py seed_demo` (kata sandi dari environment) | (35 pengguna, 6 mata kuliah, 24 materi, 12 tugas, 123 pengumpulan) |
 
 ### Akun uji
 
 | Peran | Surel | Kata sandi | Catatan |
 |-------|-------|------------|---------|
-| Admin | admin@kampus.test | admin12345 | Panel `/admin` |
-| Dosen | dosen1@kampus.test | dosen12345 | Pengampu IF-301 dan IF-305 |
-| Dosen lain | dosen2@kampus.test | dosen12345 | Pengampu IF-302 (untuk uji 403) |
-| Mahasiswa | mhs01@kampus.test | mhs12345 | Terdaftar IF-301 |
-| Mahasiswa non-peserta | mhs09@kampus.test | mhs12345 | Tidak terdaftar di IF-301 |
+| Admin | admin@kampus.test | `DEMO_PASSWORD` (lihat `.env` lokal) | Panel `/admin` |
+| Dosen | dosen1@kampus.test | `DEMO_PASSWORD` | Pengampu IF-301 dan IF-305 |
+| Dosen lain | dosen2@kampus.test | `DEMO_PASSWORD` | Pengampu IF-302 (untuk uji 403) |
+| Mahasiswa | mhs01@kampus.test | `DEMO_PASSWORD` | Terdaftar IF-301 |
+| Mahasiswa non-peserta | mhs09@kampus.test | `DEMO_PASSWORD` | Tidak terdaftar di IF-301 |
 
 ## 3. Rekapitulasi
 

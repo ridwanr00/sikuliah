@@ -29,3 +29,7 @@ docs/build/*.html
 
 # --- Cadangan basis data lokal ---
 backups/
+
+# --- Kredensial lokal ---
+CREDENTIALS.local.md
+*.local.md
