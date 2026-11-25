@@ -198,7 +198,63 @@ Bukti tangkapan layar ada di [`screenshots/`](screenshots/).
 - Statistik hanya dari data aplikasi (data demo pada versi ini), bukan data akademik resmi.
 - Belum diuji beban atau diaudit keamanannya secara independen.
 
-## 13. Lisensi dan penggunaan data
+## 13. Deployment
+
+### Render (gratis, paling cepat)
+
+Berkas `render.yaml` sudah menyiapkan semuanya (build, start, `SECRET_KEY` acak,
+`DEBUG=False`). Langkah:
+
+1. Buka <https://render.com/deploy?repo=https://github.com/ridwanr00/sikuliah>.
+2. Login dengan GitHub, pilih **Apply** pada Blueprint `sikuliah`.
+3. Tunggu build ± 3 menit; Render memberi URL `https://sikuliah.onrender.com`
+   (nama dapat berubah bila sudah dipakai).
+4. Saat pertama kali diakses, server menjalankan `migrate` dan `seed_demo` otomatis,
+   sehingga akun demo langsung tersedia.
+
+Konfigurasi manual (bila tidak memakai Blueprint):
+
+| Pengaturan | Nilai |
+|------------|-------|
+| Build command | `./build.sh` |
+| Start command | `cd src && python manage.py migrate --noinput && python manage.py seed_demo && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
+| Env | `DJANGO_DEBUG=False`, `DJANGO_SECRET_KEY=<acak>`, `PYTHON_VERSION=3.12.3` |
+
+**Keterbatasan paket gratis Render** (penting untuk dinyatakan saat presentasi):
+
+- Instance tidur setelah ± 15 menit tidak diakses; permintaan pertama bisa lambat ± 30 detik.
+- Disk bersifat sementara: basis data SQLite dan berkas unggahan hilang saat deploy ulang
+  atau restart. Karena itu `seed_demo` dijalankan pada setiap start.
+- Jangan menyimpan data nyata atau menaruh nilai ujian asli di instance demo ini.
+- Akun demo memakai kata sandi publik; ganti setelah demo bila instance dibiarkan hidup.
+
+### PythonAnywhere (bila butuh data & berkas permanen)
+
+PythonAnywhere gratis menyimpan SQLite dan folder `media/` secara permanen:
+
+1. Buat akun, buka **Consoles → Bash**, lalu `git clone https://github.com/ridwanr00/sikuliah`.
+2. `mkvirtualenv --python=/usr/bin/python3.12 sikuliah && pip install -r ~/sikuliah/requirements.txt`.
+3. Web tab → **Add a new web app** → Manual configuration → Python 3.12.
+4. Set **Source code** ke `~/sikuliah/src`, **Working directory** sama.
+5. Edit WSGI file: tambahkan `sys.path.insert(0, "/home/<user>/sikuliah/src")` dan
+   `os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings"`.
+6. Isi **Static files**: URL `/static/` → `/home/<user>/sikuliah/src/staticfiles`;
+   URL `/media/` → `/home/<user>/sikuliah/src/media`.
+7. Di Bash: `cd ~/sikuliah/src && python manage.py migrate && python manage.py seed_demo && python manage.py collectstatic`.
+8. Set variabel lingkungan (`DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False`) di tab Web → Environment variables, lalu **Reload**.
+
+### Uji mode produksi secara lokal
+
+```bash
+cd src
+python manage.py collectstatic --noinput
+DJANGO_DEBUG=False DJANGO_ALLOWED_HOSTS=127.0.0.1 DJANGO_SECURE_COOKIES=0 \
+  ../.venv/bin/gunicorn config.wsgi:application --bind 127.0.0.1:8010
+```
+
+Sudah diuji: halaman utama, login, dasbor, dan berkas statis merespons 200 pada mode ini.
+
+## 14. Lisensi dan penggunaan data
 
 Proyek ini dibuat untuk keperluan akademik. Data yang disertakan adalah data sintetis;
 jangan menggunakan data mahasiswa nyata tanpa izin.
