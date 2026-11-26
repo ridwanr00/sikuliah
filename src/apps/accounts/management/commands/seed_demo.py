@@ -182,6 +182,18 @@ class Command(BaseCommand):
             apply_password(student, mahasiswa_pw, created)
             students.append(student)
 
+        # Akun khusus demonstrasi video: terdaftar di IF-301 tanpa pengumpulan,
+        # sehingga alur "kumpulkan -> nilai -> lihat nilai" selalu bisa diperagakan.
+        demo_student, demo_created = User.objects.get_or_create(
+            email="demo@kampus.test",
+            defaults={
+                "full_name": "Mahasiswa Demo",
+                "identity_number": "20269999",
+                "role": Role.MAHASISWA,
+            },
+        )
+        apply_password(demo_student, mahasiswa_pw, demo_created)
+
         courses_data = [
             ("IF-301", "Rekayasa Perangkat Lunak", 3, 0),
             ("IF-302", "Basis Data Lanjut", 3, 1),
@@ -217,6 +229,12 @@ class Command(BaseCommand):
                     student=student,
                     defaults={"status": Enrollment.Status.ACTIVE},
                 )
+
+        Enrollment.objects.get_or_create(
+            course=courses[0],
+            student=demo_student,
+            defaults={"status": Enrollment.Status.ACTIVE},
+        )
 
         # Materi: 4 per mata kuliah, berkas PDF nyata di media/materials/.
         material_topics = [
@@ -283,6 +301,8 @@ class Command(BaseCommand):
                     continue  # sudah pernah di-seed; jangan menambah data baru
                 rate = rates[min(order, len(rates) - 1)]
                 for enrollment in enrolled:
+                    if enrollment.student.email == "demo@kampus.test":
+                        continue  # biarkan kosong untuk demonstrasi video
                     if random.random() > rate:
                         continue
                     if Submission.objects.filter(

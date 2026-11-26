@@ -37,6 +37,9 @@ PDF dan matriks keterlacakan.
 
 ## 2. Naskah video (target 3 menit 30 detik)
 
+> Naskah narasi lengkap kata per kata, dengan angka terbaru dan langkah klik, ada di
+> [13 — Naskah Video](13-script-video.md). Bagian di bawah adalah ringkasan alurnya.
+
 | Waktu | Bagian | Isi | Visual |
 |-------|--------|-----|--------|
 | 0:00–0:20 | Pembuka | Nama kelompok, anggota, judul, masalah yang diselesaikan (1 kalimat) | Slide judul / beranda |
